@@ -9,11 +9,7 @@
 <script>
 export default {
     name: 'CaseSection',
-
-    // mounted (){
-    //     console.log(this.sectionData)
-    // },
-
+    
     props:{
         sectionData:{
             type: Object,

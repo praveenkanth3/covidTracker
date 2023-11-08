@@ -6,23 +6,25 @@
         </div>
 
         <div class="countSection">
-            <div class="actionBtn"><button @click="onClickPrev">prev</button></div>
+            <div class="actionBtn"><CustomButton label="<-" :onClickBtn="onClickPrev" /></div>
             <div>
                 <h4>{{ DATA_TO_DISPLAY[review] }} count</h4>
                 <div>Confirmed: {{covidInfo[DATA_TO_DISPLAY[review]]?.confirmed || '-'}}</div>
                 <div>Recovered: {{covidInfo[DATA_TO_DISPLAY[review]]?.recovered || '-'}}</div>
                 <div>Deceased: {{covidInfo[DATA_TO_DISPLAY[review]]?.deceased || '-'}}</div>
             </div>
-            <div class="actionBtn"><button @click="onClickNext">next</button></div>
+            <div class="actionBtn"><CustomButton label="->" :onClickBtn="onClickNext" /></div>
         </div>
-        <button @click="() => OnclickViewDetail(state)">view details</button>
+        <CustomButton  label="View details" :onClickBtn="() => OnclickViewDetail(state)" />
+
     </div>
 </template>
 
 <script>
 
 import SelectBox from '../SelectBox/SelectBox.vue';
-import { DATA_TO_DISPLAY } from '../../constant'
+import { DATA_TO_DISPLAY } from '../../constant';
+import CustomButton from '../Button/Button.vue';
 
 /* eslint-disable */
 
@@ -91,7 +93,8 @@ export default {
     },
 
     components:{
-        SelectBox
+        SelectBox,
+        CustomButton
     }
 }
 

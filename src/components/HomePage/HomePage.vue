@@ -13,7 +13,12 @@
         </header>
 
         <section>
-            <CardComponent v-for="data in filteredData" :key="data[0]" :state="data[0]" :caseData="data[1]" />
+            <CardComponent 
+                v-for="data in filteredData" 
+                :key="data[0]" 
+                :state="data[0]" 
+                :caseData="data[1]" 
+            />
         </section>
     </div>
 </template>
@@ -53,9 +58,9 @@ export default {
         filteredData() {
                 return Object.entries(this.allCovidData).sort((a,b) => {
                     if(this.order === 'asec'){
-                        return b[1].total[this.sort] - a[1].total[this.sort]
+                        return (a[1].total[this.sort] || 0 ) - (b[1].total[this.sort] || 0)
                     }else{
-                        return a[1].total[this.sort] - b[1].total[this.sort]
+                        return (b[1].total[this.sort] || 0) - (a[1].total[this.sort] || 0)
                     }
                 }).filter(([key,val]) => key.toLowerCase().includes(this.searchTxt.toLowerCase()) );
         }

@@ -7,13 +7,14 @@
                 <InputBox inputType="date" :value="choosedDate" :onChange="onChangeDateField"/>
                 <div>(2020 - 2021 Record)</div>
                 <div class="sortContainer">
-                        <SelectBox :lists="SORT_OPTION" placeholder="select one" :onChange="onChangeFilter" />
+                        <SelectBox :lists="SORT_OPTION" placeholder="sort by total case" :onChange="onChangeFilter" />
                         <input type="radio" value="asec" v-model="order"> Acending
                         <input type="radio" value="desc" v-model="order"/> Desending
                 </div>
-                <button @click="onClickBack">Back</button>
+                <CustomButton label="Back"  :onClickBtn="onClickBack"/>
             </div>
         </div>
+
         <div>
             <table>
                 <thead>
@@ -33,6 +34,7 @@
                 <div v-else class="noResults">no results found</div>
             </table>
         </div>
+
     </div>
 
 </template>
@@ -42,6 +44,7 @@
 import { mapGetters } from 'vuex';
 import InputBox from '../Input/Input.vue';
 import SelectBox from '../SelectBox/SelectBox.vue';
+import CustomButton from '../Button/Button.vue'
 import CaseSection from './CaseSection.vue';
 import { DETAIL_PAGE_SORT_OPTION } from '../../constant'
 
@@ -74,19 +77,11 @@ export default {
         },
 
         filteredData() {
-            console.log(this.sort,this.order)
-            console.log(Object.entries(this.selectedStateData?.dates || {}).sort((a,b) => {
+            return Object.entries(this.selectedStateData.dates || {}).sort((a,b) => {
                 if(this.order === 'asec'){
                     return (a[1].total[this.sort] || 0) - (b[1].total[this.sort] || 0)
                 }else{
                     return (b[1].total[this.sort] || 0) - (a[1].total[this.sort] || 0)
-                }
-            }).filter(([key,val]) => key.toLowerCase().includes(this.choosedDate.toLowerCase())))
-            return Object.entries(this.selectedStateData.dates || {}).sort((a,b) => {
-                if(this.order === 'asec'){
-                    return a[1].total[this.sort] - b[1].total[this.sort]
-                }else{
-                    return b[1].total[this.sort] - a[1].total[this.sort]
                 }
             }).filter(([key,val]) => key.toLowerCase().includes(this.choosedDate.toLowerCase()));
 
@@ -112,8 +107,6 @@ export default {
             const data = await fetch('https://data.covid19india.org/v4/min/timeseries.min.json',{ method: 'GET'}).then(res => res.json());
             this.$store.dispatch('setDateWiseData',data);
             this.selectedStateData = this.StateDateWiseDetail[this.stateName];
-            console.log(this.selectedStateData)
-
         },
 
     },
@@ -121,7 +114,8 @@ export default {
     components: {
         SelectBox,
         InputBox,
-        CaseSection
+        CaseSection,
+        CustomButton
     }
 }
 
@@ -148,13 +142,13 @@ export default {
     justify-content: center;
 }
 
-table{
+table {
     width: 100%;
     border-collapse: collapse;
     text-align:center;
 }
 
-.noResults{
+.noResults {
     text-align:center;
 }
 
