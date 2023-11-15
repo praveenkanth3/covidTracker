@@ -6,8 +6,8 @@
                 <InputBox label="State" placeholder="State" :value="searchTxt" :onChange="onChangeInput"/>
                 <SelectBox placeholder="sort by total case" :lists="sortOptions" :onChange="onChangeSort"/>
                 <div>
-                    <input type="radio" value="asec" v-model="order"> Acending
-                    <input type="radio" value="desc" v-model="order"/> Desending
+                    <RadioButton label="Acending" value="asec"  @onChangeRadioBtn = "onChangeRadioBtn"/>
+                    <RadioButton label="Desending" value="desc" @onChangeRadioBtn = "onChangeRadioBtn"/>
                 </div>
             </div>
         </header>
@@ -28,6 +28,7 @@ import { mapGetters } from 'vuex';
 import InputBox from '../Input/Input.vue'
 import SelectBox from '../SelectBox/SelectBox.vue'
 import CardComponent from '../CardComponent/CardComponent.vue'
+import RadioButton from '../RadioButton/RadioButton.vue'
 import { SORT_OPTIONS } from  '../../constant'
 /* eslint-disable */
 
@@ -73,12 +74,15 @@ export default {
             this.searchTxt = val;
         },
 
-        async fetchData() {
-            const data = await fetch('https://data.covid19india.org/v4/min/data.min.json', { method: "GET"}).then(res => res.json());
-            this.$store.dispatch('setAllCovidData',data);
+        onChangeRadioBtn(val) {
+            this.order = val
         },
 
-        onChangeSort(val){
+        async fetchData() {
+            this.$store.dispatch('fetchHomePageData');
+        },
+
+        onChangeSort(val) {
             this.sort = val;
         }
 
@@ -88,21 +92,22 @@ export default {
     components:{
         InputBox,
         SelectBox,
-        CardComponent
+        CardComponent,
+        RadioButton
     }
 }
 </script>
 
 <style scoped>
 
-.filtersSection{
+.filtersSection {
     display: flex;
     column-gap: 20px;
     border-bottom: 1px solid black;
     padding: 10px;
 }
 
-section{
+section {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;

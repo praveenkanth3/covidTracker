@@ -17,7 +17,7 @@ export default {
             required: false
         },
 
-        placeholder:{
+        placeholder: {
             type: String,
             required: false
         },
@@ -32,7 +32,7 @@ export default {
             default: 'text'
         },
 
-        onChange:{
+        onChange: {
             type: Function,
             required: true
         }
@@ -43,12 +43,12 @@ export default {
 
 <style>
 
-.inputContainer{
+.inputContainer {
     display: flex;
     column-gap: 10px;
 }
 
-.label{
+.label {
     font-weight: bold;
     text-align: center;
     padding: 5px;

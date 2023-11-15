@@ -13,7 +13,7 @@ export default {
     props:{
         sectionData:{
             type: Object,
-            required: true
+            required: true,
         }
     }
 }

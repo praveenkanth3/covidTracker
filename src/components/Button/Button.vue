@@ -1,4 +1,5 @@
 <template>
+
     <div class='btnContainer'>
         <button @click="onClickBtn">{{ label }}</button>
     </div>
@@ -26,12 +27,14 @@ export default {
 </script>
 
 <style>
-button{
+
+button {
     width:fit-content;
 }
 
-.btnContainer{
+.btnContainer {
     display: flex;
     justify-content: center;
 }
+
 </style>
