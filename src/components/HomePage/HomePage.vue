@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="homepageContainer">
         <header>
             <h2>Covid Tracker -  India</h2>
             <div class="filtersSection">
@@ -100,6 +100,11 @@ export default {
 
 <style scoped>
 
+.homepageContainer{
+
+    height: 100vh;
+    overflow-y: scroll;
+}
 .filtersSection {
     display: flex;
     column-gap: 20px;

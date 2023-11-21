@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div ref="scrollContainer" @scroll="handleScroll" class="detailPageContainer">
 
         <div class="headerContainer">
             <h2>CovidTracker - India</h2>
@@ -24,8 +24,8 @@
                     <td>Delta count</td>
                     <td>Delta7 count</td>
                 </thead>
-                <tbody v-if="filteredData.length">
-                    <tr v-for="data in filteredData" v-bind:key="data[0]">
+                <tbody v-if="pagedData.length">
+                    <tr v-for="data in pagedData" v-bind:key="data[0]" class="rowClass">
                         <td>{{ data[0] }}</td>
                         <td><CaseSection :sectionData="data[1].total"/></td>
                         <td><CaseSection :sectionData="data[1].delta" /></td>
@@ -34,8 +34,19 @@
                 </tbody>
                 <div v-else class="noResults">no results found</div>
             </table>
+            <!-- <PaginationComponent :paginationLength='Math.ceil(filteredData.length/25)' :onChangePagination="onChangePagination"/> -->
         </div>
+        <!-- <Button label="^top" :onClickBtn="onClickTopBtn"></Button> -->
 
+        <transition name="fade">
+            <div id="pagetop"  @click="onClickTopBtn" class="scrollTo" v-show="topShowBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                stroke="#fff"
+                stroke-width="1" stroke-linecap="square" stroke-linejoin="arcs">
+                <path d="M18 15l-6-6-6 6"/>
+            </svg>
+            </div>
+        </transition>
     </div>
 
 </template>
@@ -48,7 +59,9 @@ import SelectBox from '../SelectBox/SelectBox.vue';
 import CustomButton from '../Button/Button.vue';
 import RadioButton from '../RadioButton/RadioButton.vue';
 import CaseSection from './CaseSection.vue';
+import PaginationComponent from '../Pagination/Pagination.vue'
 import { DETAIL_PAGE_SORT_OPTION } from '../../constant'
+import Button from '../Button/Button.vue';
 
 export default {
     name: 'DetailPage',
@@ -59,12 +72,39 @@ export default {
             choosedDate: '',
             sort: '',
             stateName: '',
+            timeId: '',
+            topShowBtn: false,
+            page: 1,
         }
     },
 
     mounted() {
         this.stateName = this.$route.params.state;
         this.fetchDateWiseData();
+        // const savedScrollPosition = localStorage.getItem('scrollPosition');
+        // this.$nextTick(() => {
+        //     if(this.ComputedPropertyUpdated) {
+        //     console.log('wdferfef');
+        //     this.$refs.scrollContainer.scrollTop(savedScrollPosition || 0);
+        //  }
+        // })
+        
+        // this.onChangePagination(1);
+    },
+
+    beforeDestroy() {
+      this.$refs.scrollContainer.removeEventListener('scroll', this.handleScroll);
+    },
+
+    watch: {
+        pagedData(newValue, oldValue){
+            console.log(newValue,oldValue)
+            if(newValue != oldValue){
+                this.scrollToPosition();
+            }
+
+        }
+
     },
 
     computed: {
@@ -85,7 +125,12 @@ export default {
                     return (b[1].total[this.sort] || 0) - (a[1].total[this.sort] || 0)
                 }
             }).filter(([key,val]) => key.toLowerCase().includes(this.choosedDate.toLowerCase()));
+        },
 
+        pagedData() {
+            const start = (this.page - 1) * 25;
+            const end = start + 25;
+            return this.filteredData.slice(start,end)
         }
     },
 
@@ -113,26 +158,73 @@ export default {
             this.$store.dispatch('fetchDetailedData', this.stateName);
         },
 
+        handleScroll(event) {
+            const scrollContainer = this.$refs.scrollContainer;
+            const scrollHeight = scrollContainer.scrollHeight;
+            const scrollTop = scrollContainer.scrollTop;
+            localStorage.setItem('scrollPosition', scrollTop);
+            const clientHeight = scrollContainer.clientHeight;
+            if (scrollTop + clientHeight >= scrollHeight) {
+                this.topShowBtn = true
+            }
+            else {
+                this.topShowBtn = false
+            }
+            if(scrollTop + clientHeight >= scrollHeight) {
+                this.page++;
+
+            }
+        },
+
+        onClickTopBtn() {
+            this.$refs.scrollContainer.scrollTo({top: 0, behavior: "smooth" });
+        },
+
+        scrollToPosition () {
+            const savedScrollPosition = localStorage.getItem('scrollPosition');
+            if (this.timeId) {
+              clearTimeout(this.timeId);
+            }
+            this.timeId = setTimeout(() => {
+                this.$refs.scrollContainer.scrollTop = savedScrollPosition || 0;
+            }, 500);
+            console.log(this.$refs.scrollContainer.scrollTop);
+        },
+        // onChangePagination(val) {
+        //     this.page = val;
+        //     const start = (val - 1) * 25;
+        //     const end = start + 25;
+        //    console.log(this.filteredData.slice(start,end))
+        // }
+
     },
 
     components: {
-        SelectBox,
-        InputBox,
-        CaseSection,
-        CustomButton,
-        RadioButton
-    }
+    SelectBox,
+    InputBox,
+    CaseSection,
+    CustomButton,
+    RadioButton,
+    PaginationComponent,
+    Button
+}
 }
 
 </script>
 
-<style>
+<style scoped>
+
+body{
+    overflow-y: hidden;
+}
 
 .headerContainer {
     display:flex;
     flex-direction: column;
     border-bottom: 1px solid black;
 }
+
+
 
 .actionSection {
     display:flex;
@@ -157,7 +249,40 @@ table {
     text-align:center;
 }
 
-tr, td{
+tr, td {
     border: 1px solid black;
+    
 }
+
+.detailPageContainer {
+    height: 98vh; 
+    overflow-y: scroll;
+
+}
+
+.fade-enter-active {
+  animation: added 1s;
+}
+
+.fade-leave-active {
+    animation: added 1s reverse;
+}
+
+@keyframes added {
+    from {
+      opacity: 0;
+      translate: -100px 0;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+.scrollTo {
+    position: fixed;
+    bottom: 0;
+    color: white;
+    background-color: gray;
+}
+
 </style>

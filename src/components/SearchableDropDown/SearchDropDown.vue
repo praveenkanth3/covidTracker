@@ -67,7 +67,7 @@ export default {
 <style scoped>
 .selectBox {
     position: relative;
-    display: block;
+    /* display: block; */
     margin: auto;
 }
 
