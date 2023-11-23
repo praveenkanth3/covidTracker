@@ -17,29 +17,31 @@
         </div>
 
         <div>
-            <table>
+            <Transition name="table">
+            <table v-if="pagedData.length">
                 <thead>
                     <td>Dates</td>
                     <td>Total count</td>
                     <td>Delta count</td>
                     <td>Delta7 count</td>
                 </thead>
-                <tbody v-if="pagedData.length">
-                    <tr v-for="data in pagedData" v-bind:key="data[0]" class="rowClass">
-                        <td>{{ data[0] }}</td>
-                        <td><CaseSection :sectionData="data[1].total"/></td>
-                        <td><CaseSection :sectionData="data[1].delta" /></td>
-                        <td><CaseSection :sectionData="data[1].delta7"/></td>
-                   </tr>
+                <!-- <tbody name="rows" is="transition-group"> -->
+                <tbody >
+                            <tr v-for="data in pagedData" v-bind:key="data[0]" ref="row" class="rows">
+                                <td>{{ data[0] }}</td>
+                                <td><CaseSection :sectionData="data[1].total"/></td>
+                                <td><CaseSection :sectionData="data[1].delta" /></td>
+                                <td><CaseSection :sectionData="data[1].delta7"/></td>
+                            </tr>
                 </tbody>
-                <div v-else class="noResults">no results found</div>
             </table>
+        </Transition>
+            <h2 v-if="!pagedData.length" class="noResults">No results found......</h2>
             <!-- <PaginationComponent :paginationLength='Math.ceil(filteredData.length/25)' :onChangePagination="onChangePagination"/> -->
         </div>
-        <!-- <Button label="^top" :onClickBtn="onClickTopBtn"></Button> -->
 
         <transition name="fade">
-            <div id="pagetop"  @click="onClickTopBtn" class="scrollTo" v-show="topShowBtn">
+            <div id="pagetop"  @click="onClickTopBtn" class="scrollTo" v-show="topShowBtn && pagedData.length">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
                 stroke="#fff"
                 stroke-width="1" stroke-linecap="square" stroke-linejoin="arcs">
@@ -81,14 +83,6 @@ export default {
     mounted() {
         this.stateName = this.$route.params.state;
         this.fetchDateWiseData();
-        // const savedScrollPosition = localStorage.getItem('scrollPosition');
-        // this.$nextTick(() => {
-        //     if(this.ComputedPropertyUpdated) {
-        //     console.log('wdferfef');
-        //     this.$refs.scrollContainer.scrollTop(savedScrollPosition || 0);
-        //  }
-        // })
-        
         // this.onChangePagination(1);
     },
 
@@ -100,10 +94,10 @@ export default {
         pagedData(newValue, oldValue){
             console.log(newValue,oldValue)
             if(newValue != oldValue){
+                console.log('fgrtngrn')
                 this.scrollToPosition();
             }
-
-        }
+        },
 
     },
 
@@ -164,15 +158,13 @@ export default {
             const scrollTop = scrollContainer.scrollTop;
             localStorage.setItem('scrollPosition', scrollTop);
             const clientHeight = scrollContainer.clientHeight;
+            // this.intersectionHandler();
             if (scrollTop + clientHeight >= scrollHeight) {
+                this.page++;
                 this.topShowBtn = true
             }
             else {
                 this.topShowBtn = false
-            }
-            if(scrollTop + clientHeight >= scrollHeight) {
-                this.page++;
-
             }
         },
 
@@ -186,9 +178,9 @@ export default {
               clearTimeout(this.timeId);
             }
             this.timeId = setTimeout(() => {
+                console.log(savedScrollPosition);
                 this.$refs.scrollContainer.scrollTop = savedScrollPosition || 0;
             }, 500);
-            console.log(this.$refs.scrollContainer.scrollTop);
         },
         // onChangePagination(val) {
         //     this.page = val;
@@ -285,4 +277,38 @@ tr, td {
     background-color: gray;
 }
 
+.rows-enter-active, .rows-leave-active {
+  transition: opacity 1s;
+}
+.rows-enter, .rows-leave-to {
+  opacity: 0;
+}
+
+tr.rows {
+  display: table-row;
+  animation: anim 0.5s ease;
+}
+
+@keyframes anim {
+  0% {
+    transform: scaleY(0);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
 </style>
+
+
+<!-- const row = document.querySelectorAll('.rowClass');
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+        if(entry.isIntersecting) {
+            entry.target.classList.add('show');
+        } else {
+            entry.target.classList.remove('show');
+        }
+    })
+});
+row.forEach((el) => observer.observe(el))  -->
