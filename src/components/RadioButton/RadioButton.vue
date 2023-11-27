@@ -2,7 +2,7 @@
 
     <div class="radioBtn">
         <label :for="label" @click="$emit('onChangeRadioBtn', value)">
-                <input type="radio" :value="value" name="order" :id="label" /> {{ label }}
+                <input type="radio" :value="value" :name="label" :id="label" :checked="defaultVal === value"/> {{ label }}
         </label>
     </div>
 
@@ -24,6 +24,11 @@ export default {
             type: String,
             required: true
         },
+
+        defaultVal: {
+            type: String,
+            default: ''
+        }
     },
 
 }

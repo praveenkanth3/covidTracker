@@ -12,9 +12,7 @@
 
             <div>
                 <h4>{{ dataToDisplay[review] }} count</h4>
-                <div>Confirmed: {{covidInfo[dataToDisplay[review]]?.confirmed || '-'}}</div>
-                <div>Recovered: {{covidInfo[dataToDisplay[review]]?.recovered || '-'}}</div>
-                <div>Deceased: {{covidInfo[dataToDisplay[review]]?.deceased || '-'}}</div>
+                <div v-for="keys in Object.keys(caseDetail)" :key="keys">{{ caseDetail[keys] }} : {{covidInfo[dataToDisplay[review]]?.[keys] || '-'}} </div>
             </div>
 
             <div class="actionBtn"><CustomButton label="->" :onClickBtn="onClickNext" /></div>
@@ -29,8 +27,8 @@
 
 import SelectBox from '../SelectBox/SelectBox.vue';
 import { DATA_TO_DISPLAY } from '../../constant';
-import SearchableDropDown from '../SearchableDropDown/SearchDropDown.vue'
-import CustomButton from '../Button/Button.vue';
+import SearchableDropDown from '../SearchableDropDown/SearchableDropDown.vue'
+import CustomButton from '../Button/CustomButton.vue';
 
 /* eslint-disable */
 
@@ -54,19 +52,9 @@ export default {
         return {
             review: 0,
             covidInfo: this.caseData,
-            selectedDist: ''
+            selectedDist: '',
+            caseDetail: { confirmed: 'Confimed', deceased: 'Deceased', recovered: 'Recovered'}
         }
-    },
-
-    computed: {
-        dataToDisplay() {
-            return DATA_TO_DISPLAY;
-        },
-
-        districts() {
-            return Object.keys(this.caseData.districts || {});
-        },
-
     },
 
     methods: {
@@ -95,6 +83,17 @@ export default {
         OnclickViewDetail(val) {
             this.$router.push({name: 'DetailPage', params: { state: val } });
         }
+
+    },
+
+    computed: {
+        dataToDisplay() {
+            return DATA_TO_DISPLAY;
+        },
+
+        districts() {
+            return Object.keys(this.caseData.districts || {});
+        },
 
     },
 

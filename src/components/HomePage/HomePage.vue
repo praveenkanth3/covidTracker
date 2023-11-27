@@ -6,8 +6,13 @@
                 <InputBox label="State" placeholder="State" :value="searchTxt" :onChange="onChangeInput"/>
                 <SelectBox placeholder="sort by total case" :lists="sortOptions" :onChange="onChangeSort"/>
                 <div>
-                    <RadioButton label="Acending" value="asec"  @onChangeRadioBtn = "onChangeRadioBtn"/>
-                    <RadioButton label="Desending" value="desc" @onChangeRadioBtn = "onChangeRadioBtn"/>
+                    <RadioButton 
+                        v-for="val in ['Acending', 'Desending']" 
+                        :label="val" :value=" val === 'Acending' ? 'asec' : 'desc' " 
+                        :defaultVal="order"  
+                        @onChangeRadioBtn = "onChangeRadioBtn"
+                        :key="val"
+                    />
                 </div>
             </div>
         </header>
@@ -25,7 +30,7 @@
 <script>
 
 import { mapGetters } from 'vuex';
-import InputBox from '../Input/Input.vue'
+import InputBox from '../Input/InputBox.vue'
 import SelectBox from '../SelectBox/SelectBox.vue'
 import CardComponent from '../CardComponent/CardComponent.vue'
 import RadioButton from '../RadioButton/RadioButton.vue'
@@ -43,8 +48,33 @@ export default {
         }
     },
 
-    mounted:function mounted() {
+    mounted() {
         this.fetchData()
+    },
+
+    methods: {
+
+        onChangeInput(val) {
+            this.searchTxt = val;
+        },
+
+        onChangeRadioBtn(val) {
+            this.order = val
+        },
+
+        getSortData(a,b) {
+            return (a[1].total[this.sort] || 0) - (b[1].total[this.sort] || 0)
+        },
+
+        async fetchData() {
+            this.$store.dispatch('fetchHomePageData');
+        },
+
+        onChangeSort(val) {
+            this.sort = val;
+        }
+
+
     },
 
     computed: {
@@ -59,31 +89,11 @@ export default {
         filteredData() {
                 return Object.entries(this.allCovidData).sort((a,b) => {
                     if(this.order === 'asec'){
-                        return (a[1].total[this.sort] || 0 ) - (b[1].total[this.sort] || 0)
+                        return this.getSortData(a,b)
                     }else{
-                        return (b[1].total[this.sort] || 0) - (a[1].total[this.sort] || 0)
+                        return this.getSortData(b,a)
                     }
                 }).filter(([key,val]) => key.toLowerCase().includes(this.searchTxt.toLowerCase()) );
-        }
-
-
-    },
-
-    methods: {
-        onChangeInput(val) {
-            this.searchTxt = val;
-        },
-
-        onChangeRadioBtn(val) {
-            this.order = val
-        },
-
-        async fetchData() {
-            this.$store.dispatch('fetchHomePageData');
-        },
-
-        onChangeSort(val) {
-            this.sort = val;
         }
 
 

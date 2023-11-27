@@ -1,14 +1,18 @@
 <template>
     <div>
-        <div>Confirmed: {{  sectionData?.confirmed || '-'}}</div>
-        <div>Recovered: {{ sectionData?.recovered || '-'}}</div>
-        <div>Deceased: {{ sectionData?.deceased || '-'}}</div>
+        <div v-for="keys in Object.keys(caseDetail)" :key="keys">{{ caseDetail?.[keys] }}: {{ sectionData?.[keys] || '-'  }}</div>
     </div>
 </template>
 
 <script>
 export default {
     name: 'CaseSection',
+
+    data () {
+        return {
+            caseDetail: { confirmed: 'Confimed', deceased: 'Deceased', recovered: 'Recovered'}
+        }
+    },
     
     props:{
         sectionData:{

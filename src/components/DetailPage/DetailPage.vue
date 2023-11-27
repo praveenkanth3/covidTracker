@@ -1,16 +1,22 @@
 <template>
-    <div ref="scrollContainer" @scroll="handleScroll" class="detailPageContainer">
+    <div ref="scrollContainer" @scroll="debounce" class="detailPageContainer">
 
         <div class="headerContainer">
             <h2>CovidTracker - India</h2>
             <div class="actionSection">
                 <h2>State: {{ stateName }}</h2>
+                <!-- date select filter -->
                 <InputBox inputType="date" :value="choosedDate" :onChange="onChangeDateField"/>
                 <div>(2020 - 2021 Record)</div>
                 <div class="sortContainer">
                         <SelectBox :lists="sortOption" placeholder="sort by total case" :onChange="onChangeFilter" />
-                        <RadioButton label="Acending" value="asec"  @onChangeRadioBtn = "onChangeRadioBtn"/>
-                        <RadioButton label="Desending" value="desc" @onChangeRadioBtn = "onChangeRadioBtn"/>
+                        <RadioButton 
+                            v-for="val in ['Acending', 'Desending']" 
+                            :label="val" :value=" val === 'Acending' ? 'asec' : 'desc' " 
+                            :defaultVal="order"  
+                            @onChangeRadioBtn = "onChangeRadioBtn"
+                            :key="val"
+                        />
                 </div>
                 <CustomButton label="Back"  :onClickBtn="onClickBack"/>
             </div>
@@ -29,9 +35,7 @@
                 <tbody >
                             <tr v-for="data in pagedData" v-bind:key="data[0]" ref="row" class="rows">
                                 <td>{{ data[0] }}</td>
-                                <td><CaseSection :sectionData="data[1].total"/></td>
-                                <td><CaseSection :sectionData="data[1].delta" /></td>
-                                <td><CaseSection :sectionData="data[1].delta7"/></td>
+                                <td v-for="type in typeOfCase" :key="type"><CaseSection :sectionData="data[1]?.[type]"/></td>
                             </tr>
                 </tbody>
             </table>
@@ -40,6 +44,7 @@
             <!-- <PaginationComponent :paginationLength='Math.ceil(filteredData.length/25)' :onChangePagination="onChangePagination"/> -->
         </div>
 
+        <!-- goto top icon  -->
         <transition name="fade">
             <div id="pagetop"  @click="onClickTopBtn" class="scrollTo" v-show="topShowBtn && pagedData.length">
             <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
@@ -56,14 +61,15 @@
 <script>
 /* eslint-disable */
 import { mapGetters } from 'vuex';
-import InputBox from '../Input/Input.vue';
+import InputBox from '../Input/InputBox.vue';
 import SelectBox from '../SelectBox/SelectBox.vue';
-import CustomButton from '../Button/Button.vue';
+import CustomButton from '../Button/CustomButton.vue';
 import RadioButton from '../RadioButton/RadioButton.vue';
 import CaseSection from './CaseSection.vue';
 import PaginationComponent from '../Pagination/Pagination.vue'
 import { DETAIL_PAGE_SORT_OPTION } from '../../constant'
-import Button from '../Button/Button.vue';
+
+let timer;
 
 export default {
     name: 'DetailPage',
@@ -76,7 +82,8 @@ export default {
             stateName: '',
             timeId: '',
             topShowBtn: false,
-            page: 1,
+            typeOfCase: ['total', 'delta', 'delta7'],
+            page: 1
         }
     },
 
@@ -86,52 +93,21 @@ export default {
         // this.onChangePagination(1);
     },
 
-    beforeDestroy() {
-      this.$refs.scrollContainer.removeEventListener('scroll', this.handleScroll);
-    },
-
-    watch: {
-        pagedData(newValue, oldValue){
-            console.log(newValue,oldValue)
-            if(newValue != oldValue){
-                console.log('fgrtngrn')
-                this.scrollToPosition();
-            }
-        },
-
-    },
-
-    computed: {
-
-        ...mapGetters({
-            StateDateWiseDetail: 'StateDateWiseDetail'
-       }),
-
-        sortOption() {
-            return DETAIL_PAGE_SORT_OPTION;
-        },
-
-        filteredData() {
-            return Object.entries(this.StateDateWiseDetail.dates || {}).sort((a,b) => {
-                if(this.order === 'asec') {
-                    return (a[1].total[this.sort] || 0) - (b[1].total[this.sort] || 0)
-                }else {
-                    return (b[1].total[this.sort] || 0) - (a[1].total[this.sort] || 0)
-                }
-            }).filter(([key,val]) => key.toLowerCase().includes(this.choosedDate.toLowerCase()));
-        },
-
-        pagedData() {
-            const start = (this.page - 1) * 25;
-            const end = start + 25;
-            return this.filteredData.slice(start,end)
-        }
-    },
-
     methods: {
+
+        debounce() {
+            clearTimeout(timer)
+            timer = setTimeout(() => {
+                this.handleScroll();
+            }, 1000)
+        },
 
         onClickBack() {
             this.$router.push({name : 'LandingPage'})
+        },
+
+        getSortData(a,b) {
+            return (a[1].total[this.sort] || 0) - (b[1].total[this.sort] || 0)
         },
 
         onChangeRadioBtn(val) {
@@ -153,6 +129,7 @@ export default {
         },
 
         handleScroll(event) {
+            console.log('scrolling')
             const scrollContainer = this.$refs.scrollContainer;
             const scrollHeight = scrollContainer.scrollHeight;
             const scrollTop = scrollContainer.scrollTop;
@@ -175,7 +152,7 @@ export default {
         scrollToPosition () {
             const savedScrollPosition = localStorage.getItem('scrollPosition');
             if (this.timeId) {
-              clearTimeout(this.timeId);
+            clearTimeout(this.timeId);
             }
             this.timeId = setTimeout(() => {
                 console.log(savedScrollPosition);
@@ -191,6 +168,43 @@ export default {
 
     },
 
+    watch: {
+        pagedData(newValue, oldValue){
+            if(newValue != oldValue){
+                this.scrollToPosition();
+            }
+        },
+
+    },
+
+    computed: {
+
+        ...mapGetters({
+            StateDateWiseDetail: 'StateDateWiseDetail'
+       }),
+
+        sortOption() {
+            return DETAIL_PAGE_SORT_OPTION;
+        },
+
+        filteredData() {
+            const date = this.choosedDate.toLowerCase();
+            return Object.entries(this.StateDateWiseDetail.dates || {}).sort((a,b) => {
+                if(this.order === 'asec') {
+                    return this.getSortData(a,b);
+                }else {
+                    return this.getSortData(b,a);
+                }
+            }).filter(([key,val]) => key.toLowerCase().includes(date));
+        },
+
+        pagedData() {
+            const start = (this.page - 1) * 25;
+            const end = start + 25;
+            return this.filteredData.slice(start,end)
+        }
+    },
+
     components: {
     SelectBox,
     InputBox,
@@ -198,7 +212,6 @@ export default {
     CustomButton,
     RadioButton,
     PaginationComponent,
-    Button
 }
 }
 
